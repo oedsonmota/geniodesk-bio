@@ -146,7 +146,7 @@
     ds.forEach(function(c){
       h+='<a class="cup alt" href="'+url(c.href)+'"'+tgt(c.href)+'><span class="ctx"><span class="ey">'+esc(c.categoria)+'</span>';
       if(c.descricao) h+='<small>'+esc(c.descricao)+'</small>';
-      h+='</span><span class="code">'+esc(c.cta||'Ver no site')+' '+I.right+'</span></a>';
+      h+='</span><span class="go3" aria-hidden="true">'+I.right+'</span></a>';
     });
     return h+'</div>';
   }
