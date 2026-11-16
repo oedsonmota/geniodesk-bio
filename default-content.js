@@ -80,10 +80,10 @@ window.BIO_DEFAULT = {
     destaquesTitle: 'Comece por aqui',
     destaquesHint: 'Toque para ver no site.',
     destaques: [
-      { categoria: 'Mesas', descricao: 'Com regulagem de altura.', href: 'https://geniodesk.com.br/collections/mesa-com-regulagem-de-altura?utm_source=instagram&utm_medium=bio&utm_campaign=bio_destaque_mesas' },
-      { categoria: 'Cadeiras', descricao: 'Ergonômicas.', href: 'https://geniodesk.com.br/collections/cadeiras-ergonomicas?utm_source=instagram&utm_medium=bio&utm_campaign=bio_destaque_cadeiras' },
-      { categoria: 'M-Stand', descricao: 'O essencial em forma elevada.', href: 'https://geniodesk.com.br/collections/m-stand?utm_source=instagram&utm_medium=bio&utm_campaign=bio_destaque_mstand' },
-      { categoria: 'Acessórios', descricao: 'Para completar o setup.', href: 'https://geniodesk.com.br/collections/acessorios?utm_source=instagram&utm_medium=bio&utm_campaign=bio_destaque_acessorios' }
+      { categoria: 'Mesas', descricao: 'com regulagem de altura.', href: 'https://geniodesk.com.br/collections/mesa-com-regulagem-de-altura?utm_source=instagram&utm_medium=bio&utm_campaign=bio_destaque_mesas' },
+      { categoria: 'Cadeiras', descricao: 'ergonômicas.', href: 'https://geniodesk.com.br/collections/cadeiras-ergonomicas?utm_source=instagram&utm_medium=bio&utm_campaign=bio_destaque_cadeiras' },
+      { categoria: 'M-Stand', descricao: 'o essencial em forma elevada.', href: 'https://geniodesk.com.br/collections/m-stand?utm_source=instagram&utm_medium=bio&utm_campaign=bio_destaque_mstand' },
+      { categoria: 'Acessórios', descricao: 'para completar o setup.', href: 'https://geniodesk.com.br/collections/acessorios?utm_source=instagram&utm_medium=bio&utm_campaign=bio_destaque_acessorios' }
     ],
     trust: {
       show: true,
@@ -95,7 +95,7 @@ window.BIO_DEFAULT = {
       href: 'https://geniodesk.com.br/collections/mesa-com-regulagem-de-altura/?utm_source=instagram&utm_medium=bio&utm_campaign=30_dias_para_testar_sua_nova_geniodesk'
     },
     seg: {
-      show: true,
+      show: false,
       icon: 'store',
       eyebrow: 'Loja oficial',
       title: 'Todos os produtos no site',
