@@ -285,8 +285,8 @@ const TABS = {
     ]},
     {type:'sec', title:'Atalhos (no lugar dos cupons)', fields:[
       {type:'row', fields:[{type:'text', path:'normal.destaquesTitle', label:'Título da seção'},{type:'text', path:'normal.destaquesHint', label:'Dica ao lado'}]},
-      {type:'list', path:'normal.destaques', label:'Atalho', titleKey:'categoria', blank:{categoria:'',descricao:'',cta:'Ver no site',href:''}, fields:[
-        {type:'row', fields:[{type:'text', key:'categoria', label:'Título'},{type:'text', key:'cta', label:'Texto do link', hint:'Padrão: Ver no site'}]},
+      {type:'list', path:'normal.destaques', label:'Atalho', titleKey:'categoria', blank:{categoria:'',descricao:'',href:''}, fields:[
+        {type:'text', key:'categoria', label:'Título'},
         {type:'text', key:'descricao', label:'Descrição curta'},
         {type:'url', key:'href', label:'Link'}
       ]}
