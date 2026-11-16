@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Painel · Link na bio GenioDesk</title>
+<link rel="icon" href="../favicon.png" type="image/png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap">
+<style>
+:root{--bg:#0E0E0E;--panel:#151515;--card:#1C1C1C;--line:rgba(255,255,255,.09);--line2:rgba(255,255,255,.16);--fg:#F2F2F2;--muted:#A0A0A0;--dim:#6B6B6B;--y:#FEBD16;--amber:#E89B00;--ink:#141414;--red:#ff6b5e;--green:#4ade80;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.45 "DM Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--y)}
+[hidden]{display:none!important}
+
+/* login */
+.login{min-height:100vh;display:grid;place-items:center;padding:24px}
+.login form{width:100%;max-width:360px;display:flex;flex-direction:column;gap:12px;padding:28px;border-radius:22px;background:var(--panel);border:1px solid var(--line)}
+.wm{display:block;width:150px;height:15px;background:#fff;-webkit-mask:url(../bio-assets/logo-geniodesk.png) left center/contain no-repeat;mask:url(../bio-assets/logo-geniodesk.png) left center/contain no-repeat}
+.login .wm{margin-bottom:8px}
+.login h1{margin:0 0 4px;font-size:20px}
+.login p{margin:0 0 6px;color:var(--muted);font-size:13px}
+.err{color:var(--red);font-size:13px;min-height:18px}
+.ok{color:var(--green);font-size:13px}
+
+/* inputs */
+.inp,select.inp,textarea.inp{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line2);background:#0f0f0f;outline:none}
+textarea.inp{min-height:70px;resize:vertical}
+.inp:focus{border-color:var(--y)}
+.b{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 16px;border-radius:999px;border:1px solid var(--line2);background:#222;cursor:pointer;font-weight:600;white-space:nowrap}
+.b:hover{background:#2a2a2a}
+.b.y{background:linear-gradient(135deg,#FFD24D 0%,var(--y) 50%,var(--amber) 100%);color:var(--ink);border:0}
+.b.y:disabled{opacity:.45;cursor:default}
+.b.s{padding:6px 11px;font-size:12px}
+.b.ghost{background:transparent}
+.b.danger{color:var(--red)}
+
+/* app */
+.app{display:grid;grid-template-columns:minmax(420px,560px) 1fr;height:100vh}
+.left{display:flex;flex-direction:column;border-right:1px solid var(--line);min-height:0;background:var(--panel)}
+.top{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.top .wm{width:118px;height:12px}
+.top .sp{flex:1}
+.status{display:flex;align-items:center;gap:10px;padding:12px 18px;border-bottom:1px solid var(--line);font-size:13px;color:var(--muted)}
+.status b{color:var(--fg)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--y);box-shadow:0 0 0 4px rgba(254,189,22,.15)}
+.tabs{display:flex;gap:4px;padding:10px 12px;border-bottom:1px solid var(--line);overflow-x:auto}
+.tab{padding:8px 13px;border-radius:999px;border:0;background:transparent;color:var(--muted);cursor:pointer;font-weight:600;white-space:nowrap}
+.tab.on{background:#262626;color:var(--fg)}
+.form{flex:1;overflow:auto;padding:18px 18px 120px}
+.foot{display:flex;align-items:center;gap:10px;padding:12px 18px;border-top:1px solid var(--line);background:var(--panel)}
+.foot .msg{flex:1;font-size:12.5px;color:var(--muted)}
+.foot .msg.dirty{color:var(--y)}
+
+.sec{margin:0 0 22px}
+.sec>h3{margin:0 0 4px;font-size:15px}
+.sec>p.help{margin:0 0 12px;color:var(--muted);font-size:12.5px}
+.f{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.f>label{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.02em}
+.f .hint{font-size:11.5px;color:var(--dim)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tog{display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:12px;font-weight:600;font-size:13px}
+.tog input{appearance:none;width:38px;height:22px;border-radius:999px;background:#333;position:relative;cursor:pointer;flex:none;transition:background .2s}
+.tog input::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .2s}
+.tog input:checked{background:var(--y)}
+.tog input:checked::after{left:19px}
+.group{padding:14px;border-radius:14px;border:1px solid var(--line);background:var(--card);margin-bottom:12px}
+.group>h4{margin:0 0 10px;font-size:13px}
+.item{padding:12px;border-radius:12px;border:1px solid var(--line);background:#181818;margin-bottom:10px}
+.item-h{display:flex;align-items:center;gap:6px;margin-bottom:10px}
+.item-h b{flex:1;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.media{display:flex;gap:10px;align-items:flex-start}
+.thumb{flex:none;width:76px;height:76px;border-radius:10px;background:#0b0b0b center/cover no-repeat;border:1px solid var(--line);display:grid;place-items:center;color:var(--dim);font-size:11px;overflow:hidden}
+.thumb.contain{background-size:70% auto;background-color:#d6d6d6}
+.thumb video{width:100%;height:100%;object-fit:cover}
+.media .col{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.media .acts{display:flex;gap:6px;flex-wrap:wrap}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.mode{padding:14px;border-radius:14px;border:1.5px solid var(--line2);background:var(--card);cursor:pointer;text-align:left}
+.mode b{display:block;font-size:14px;margin-bottom:3px}
+.mode small{color:var(--muted);font-size:12px}
+.mode.on{border-color:var(--y);background:rgba(254,189,22,.07)}
+.hist{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px}
+.hist span{flex:1;color:var(--muted)}
+
+.right{display:flex;flex-direction:column;min-width:0;background:#0a0a0a}
+.ptop{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.ptop .sp{flex:1}
+.seg2{display:inline-flex;padding:3px;border-radius:999px;background:#1d1d1d;border:1px solid var(--line)}
+.seg2 button{border:0;background:transparent;padding:6px 12px;border-radius:999px;cursor:pointer;color:var(--muted);font-weight:600;font-size:12.5px}
+.seg2 button.on{background:#333;color:var(--fg)}
+.stage{flex:1;display:grid;place-items:center;overflow:auto;padding:20px}
+.frame{border:0;border-radius:28px;background:#0E0E0E;box-shadow:0 0 0 8px #1b1b1b,0 30px 80px rgba(0,0,0,.6);transition:width .3s,height .3s}
+.frame.m{width:390px;height:780px}
+.frame.d{width:100%;height:100%;border-radius:12px;box-shadow:0 0 0 1px var(--line)}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);padding:10px 16px;border-radius:999px;background:var(--y);color:var(--ink);font-weight:700;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:10}
+.toast.show{opacity:1}
+.toast.bad{background:var(--red);color:#fff}
+.spin{opacity:.6;pointer-events:none}
+
+@media (max-width:980px){
+  .app{grid-template-columns:1fr;height:auto}
+  .left{height:auto;border-right:0}
+  .form{overflow:visible}
+  .foot{position:sticky;bottom:0}
+  .right{height:90vh}
+}
+</style>
+</head>
+<body>
+
+<div class="login" id="login">
+  <form id="loginForm">
+    <span class="wm" role="img" aria-label="GenioDesk"></span>
+    <h1>Painel do link na bio</h1>
+    <p>Entre com o mesmo e-mail e senha do Radar de Avaliações.</p>
+    <input class="inp" type="email" id="email" placeholder="E-mail" autocomplete="username" required>
+    <input class="inp" type="password" id="pass" placeholder="Senha" autocomplete="current-password" required>
+    <button class="b y" type="submit">Entrar</button>
+    <button class="b ghost s" type="button" id="forgot">Esqueci a senha</button>
+    <div class="err" id="loginErr"></div>
+  </form>
+</div>
+
+<div class="login" id="newpass" hidden>
+  <form id="newpassForm">
+    <span class="wm" role="img" aria-label="GenioDesk"></span>
+    <h1>Nova senha</h1>
+    <input class="inp" type="password" id="np1" placeholder="Nova senha (mín. 8 caracteres)" minlength="8" required>
+    <button class="b y" type="submit">Salvar senha</button>
+    <div class="err" id="npErr"></div>
+  </form>
+</div>
+
+<div class="app" id="app" hidden>
+  <div class="left">
+    <div class="top">
+      <span class="wm" role="img" aria-label="GenioDesk"></span>
+      <div class="sp"></div>
+      <a class="b s ghost" href="../" target="_blank" rel="noopener">Ver site ↗</a>
+      <button class="b s ghost" id="logout">Sair</button>
+    </div>
+    <div class="status" id="status"><span class="dot"></span><span>Carregando…</span></div>
+    <div class="tabs" id="tabs"></div>
+    <div class="form" id="form"></div>
+    <div class="foot">
+      <span class="msg" id="msg">Tudo salvo.</span>
+      <button class="b s ghost" id="discard" hidden>Descartar</button>
+      <button class="b y" id="save" disabled>Publicar alterações</button>
+    </div>
+  </div>
+  <div class="right">
+    <div class="ptop">
+      <b style="font-size:13px">Pré-visualização</b>
+      <div class="seg2" id="pvMode"><button data-v="campanha">Campanha</button><button data-v="normal">Normal</button></div>
+      <div class="sp"></div>
+      <div class="seg2" id="pvDev"><button data-v="m" class="on">Celular</button><button data-v="d">Desktop</button></div>
+    </div>
+    <div class="stage"><iframe class="frame m" id="frame" title="Pré-visualização"></iframe></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="../config.js"></script>
+<script src="../default-content.js"></script>
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+const CFG = window.BIO_CONFIG, DEF = window.BIO_DEFAULT;
+const sb = createClient(CFG.supabaseUrl, CFG.supabaseKey);
+const $ = s => document.querySelector(s);
+const clone = o => JSON.parse(JSON.stringify(o));
+
+let state = null, saved = '', user = null, tab = 'geral', pvMode = 'campanha';
+
+/* ---------- utilidades ---------- */
+function merge(base, over){
+  if(Array.isArray(base)) return Array.isArray(over)?over:base;
+  if(base && typeof base==='object'){ const o={}; for(const k of Object.keys(base)) o[k]=merge(base[k], over?over[k]:undefined);
+    if(over&&typeof over==='object') for(const k of Object.keys(over)) if(!(k in o)) o[k]=over[k]; return o; }
+  return over===undefined||over===null?base:over;
+}
+const get = (p) => p.split('.').reduce((o,k)=>o==null?o:o[k], state);
+function set(p, v){ const ks=p.split('.'); let o=state; ks.slice(0,-1).forEach(k=>{ if(o[k]==null) o[k]={}; o=o[k]; }); o[ks.at(-1)]=v; changed(); }
+const abs = u => !u ? '' : (/^(https?:|data:|blob:)/.test(u) ? u : '../'+u);
+const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(t, bad){ const el=$('#toast'); el.textContent=t; el.classList.toggle('bad',!!bad); el.classList.add('show'); clearTimeout(toast.t); toast.t=setTimeout(()=>el.classList.remove('show'),2400); }
+
+/* ---------- esquema do formulário ---------- */
+const ICON_OPTS = [['people','Pessoas'],['store','Loja'],['ticket','Cupom'],['chat','Conversa'],['mail','E-mail'],['star','Estrela'],['gift','Presente'],['play','Vídeo'],['tools','Ferramenta'],['link','Link']];
+const HEAD_OPTS = [['arte','Arte "Novembro Genial"'],['imagem','Imagem (PNG/SVG da campanha)'],['texto','Texto']];
+
+const trustFields = base => ({type:'group', title:'Card de garantia (amarelo claro)', fields:[
+  {type:'toggle', path:base+'.show', label:'Mostrar este card'},
+  {type:'image', path:base+'.img', label:'Selo', contain:true},
+  {type:'text', path:base+'.eyebrow', label:'Chamada pequena'},
+  {type:'text', path:base+'.title', label:'Título'},
+  {type:'textarea', path:base+'.text', label:'Texto'},
+  {type:'row', fields:[{type:'text', path:base+'.cta', label:'Texto do link'},{type:'url', path:base+'.href', label:'Link'}]}
+]});
+const segFields = base => ({type:'group', title:'Card escuro com botão', fields:[
+  {type:'toggle', path:base+'.show', label:'Mostrar este card'},
+  {type:'select', path:base+'.icon', label:'Ícone', options:ICON_OPTS},
+  {type:'text', path:base+'.eyebrow', label:'Chamada pequena'},
+  {type:'text', path:base+'.title', label:'Título'},
+  {type:'textarea', path:base+'.text', label:'Texto'},
+  {type:'row', fields:[{type:'text', path:base+'.cta', label:'Texto do botão'},{type:'url', path:base+'.href', label:'Link'}]}
+]});
+const headFields = (b) => [
+  {type:'select', path:b+'.headingType', label:'Título grande do topo', options:HEAD_OPTS},
+  {type:'image', path:b+'.headingImage', label:'Imagem do título', contain:true, hint:'Usada quando o tipo é "Imagem". De preferência PNG/SVG branco com fundo transparente.', show:()=>get(b+'.headingType')==='imagem'},
+  {type:'text', path:b+'.headingText', label:'Texto do título', hint:'Coloque *entre asteriscos* o que deve ficar amarelo.', show:()=>get(b+'.headingType')!=='arte'},
+];
+
+const TABS = {
+  geral: {label:'Geral', render:()=>[
+    {type:'modes'},
+    {type:'toggle', path:'autoNormalAfterEnd', label:'Trocar sozinho para o modo Normal quando a campanha terminar'},
+    {type:'sec', title:'Marca', fields:[
+      {type:'image', path:'brand.logo', label:'Logo GenioDesk (PNG branco, fundo transparente)', contain:true, hint:'Aparece no topo e no rodapé. A cor é aplicada pela página.'},
+      {type:'image', path:'brand.logoMStand', label:'Logo M-Stand', contain:true},
+      {type:'image', path:'brand.favicon', label:'Ícone da aba (favicon)', contain:true},
+      {type:'text', path:'footer.text', label:'Frase do rodapé'}
+    ]},
+    {type:'sec', title:'Redes sociais', help:'Deixe vazio para esconder o ícone.', fields:[
+      {type:'url', path:'social.instagram', label:'Instagram'},
+      {type:'url', path:'social.tiktok', label:'TikTok'},
+      {type:'url', path:'social.youtube', label:'YouTube'},
+      {type:'url', path:'social.site', label:'Site'}
+    ]},
+    {type:'history'},
+    {type:'reset'}
+  ]},
+  topo: {label:'Vídeo e fotos', render:()=>[
+    {type:'sec', title:'Vídeo do topo', help:'Vale para os dois modos. MP4 de até 50 MB, sem áudio, de preferência leve (até 5 MB).', fields:[
+      {type:'video', path:'hero.videoWide', label:'Vídeo horizontal (usado no desktop e, por padrão, no celular)'},
+      {type:'video', path:'hero.videoTall', label:'Vídeo vertical'},
+      {type:'toggle', path:'hero.tallOnMobile', label:'Usar o vídeo vertical no celular'}
+    ]},
+    {type:'sec', title:'Fotos do topo', help:'Só aparecem se os dois vídeos estiverem vazios: viram um carrossel automático. A primeira foto também gera o fundo desfocado da página.', fields:[
+      {type:'list', path:'hero.slides', label:'Foto', titleKey:'name', blank:{img:'',name:'',href:''}, fields:[
+        {type:'image', key:'img', label:'Foto'},
+        {type:'text', key:'name', label:'Nome'},
+        {type:'url', key:'href', label:'Link'}
+      ]}
+    ]}
+  ]},
+  campanha: {label:'Campanha', render:()=>[
+    {type:'sec', title:'Topo da campanha', fields:[
+      {type:'text', path:'campanha.pill', label:'Botão amarelo do topo'},
+      ...headFields('campanha'),
+      {type:'row', fields:[{type:'text', path:'campanha.titleLine1', label:'Título — linha 1 (branca)'},{type:'text', path:'campanha.titleLine2', label:'Título — linha 2 (amarela)'}]},
+      {type:'text', path:'campanha.subtitle', label:'Texto de apoio'},
+      {type:'text', path:'campanha.buttonText', label:'Botão (leva até os cupons)'}
+    ]},
+    {type:'sec', title:'Período e contagem regressiva', help:'Horário de Brasília. O fim é o primeiro minuto em que a campanha NÃO vale mais (ex.: 01/12 00:00 = vale até 30/11 23:59).', fields:[
+      {type:'toggle', path:'campanha.showTimer', label:'Mostrar contagem regressiva'},
+      {type:'row', fields:[{type:'datetime', path:'campanha.start', label:'Começa'},{type:'datetime', path:'campanha.end', label:'Termina'}]},
+      {type:'text', path:'campanha.endedSubtitle', label:'Texto de apoio depois que acabar'}
+    ]},
+    {type:'sec', title:'Cupons', help:'Ao tocar, o cupom é copiado e a coleção abre no site.', fields:[
+      {type:'row', fields:[{type:'text', path:'campanha.cuponsTitle', label:'Título da seção'},{type:'text', path:'campanha.cuponsHint', label:'Dica ao lado'}]},
+      {type:'list', path:'campanha.cupons', label:'Cupom', titleKey:'codigo', blank:{categoria:'',valor:'',descricao:'',selo:'',codigo:'',href:''}, fields:[
+        {type:'row', fields:[{type:'text', key:'categoria', label:'Categoria'},{type:'text', key:'valor', label:'Desconto (ex.: R$ 300 OFF)'}]},
+        {type:'row', fields:[{type:'text', key:'codigo', label:'Código'},{type:'text', key:'selo', label:'Selo preto (opcional)', hint:'Ex.: Frete grátis'}]},
+        {type:'text', key:'descricao', label:'Descrição curta (opcional)'},
+        {type:'url', key:'href', label:'Link da coleção'}
+      ]}
+    ]},
+    trustFields('campanha.trust'),
+    segFields('campanha.seg'),
+    {type:'sec', title:'Compartilhamento', fields:[
+      {type:'text', path:'campanha.pageTitle', label:'Título da aba / Google'},
+      {type:'textarea', path:'campanha.pageDescription', label:'Descrição'}
+    ]}
+  ]},
+  normal: {label:'Normal', render:()=>[
+    {type:'sec', title:'Topo sem campanha', help:'Mesmo layout, sem cupons nem contagem. Use para os períodos entre campanhas.', fields:[
+      {type:'row', fields:[{type:'text', path:'normal.pill', label:'Botão amarelo do topo'},{type:'url', path:'normal.pillHref', label:'Link do botão'}]},
+      ...headFields('normal'),
+      {type:'row', fields:[{type:'text', path:'normal.titleLine1', label:'Título — linha 1 (branca)'},{type:'text', path:'normal.titleLine2', label:'Título — linha 2 (amarela)'}]},
+      {type:'text', path:'normal.subtitle', label:'Texto de apoio'},
+      {type:'row', fields:[{type:'text', path:'normal.buttonText', label:'Texto do botão'},{type:'url', path:'normal.buttonHref', label:'Link do botão'}]}
+    ]},
+    {type:'sec', title:'Atalhos (no lugar dos cupons)', fields:[
+      {type:'row', fields:[{type:'text', path:'normal.destaquesTitle', label:'Título da seção'},{type:'text', path:'normal.destaquesHint', label:'Dica ao lado'}]},
+      {type:'list', path:'normal.destaques', label:'Atalho', titleKey:'categoria', blank:{categoria:'',descricao:'',cta:'Ver no site',href:''}, fields:[
+        {type:'row', fields:[{type:'text', key:'categoria', label:'Título'},{type:'text', key:'cta', label:'Texto do link', hint:'Padrão: Ver no site'}]},
+        {type:'text', key:'descricao', label:'Descrição curta'},
+        {type:'url', key:'href', label:'Link'}
+      ]}
+    ]},
+    trustFields('normal.trust'),
+    segFields('normal.seg'),
+    {type:'sec', title:'Compartilhamento', fields:[
+      {type:'text', path:'normal.pageTitle', label:'Título da aba / Google'},
+      {type:'textarea', path:'normal.pageDescription', label:'Descrição'}
+    ]}
+  ]},
+  vitrine: {label:'Vitrine', render:()=>[
+    {type:'sec', title:'Vitrine de produtos', help:'Aparece nos dois modos.', fields:[
+      {type:'text', path:'shop.title', label:'Título da seção'}
+    ]},
+    {type:'group', title:'Destaque grande', fields:[
+      {type:'image', path:'shop.feat.img', label:'Foto (900×619 de referência)'},
+      {type:'row', fields:[{type:'text', path:'shop.feat.name', label:'Nome'},{type:'text', path:'shop.feat.badge', label:'Selo (ex.: Mais vendida)'}]},
+      {type:'url', path:'shop.feat.href', label:'Link'},
+      {type:'text', path:'shop.feat.alt', label:'Descrição da imagem (acessibilidade)'}
+    ]},
+    {type:'sec', title:'Cards de produtos', help:'Fotos quadradas.', fields:[
+      {type:'list', path:'shop.cards', label:'Produto', titleKey:'name', blank:{img:'',alt:'',name:'',small:'',logo:'',href:''}, fields:[
+        {type:'image', key:'img', label:'Foto'},
+        {type:'row', fields:[{type:'text', key:'name', label:'Nome'},{type:'text', key:'small', label:'Linha de apoio'}]},
+        {type:'select', key:'logo', label:'Título do card', options:[['','Nome em texto'],['mstand','Logo M-Stand']]},
+        {type:'url', key:'href', label:'Link'},
+        {type:'text', key:'alt', label:'Descrição da imagem (acessibilidade)'}
+      ]}
+    ]}
+  ]},
+  links: {label:'Links', render:()=>[
+    {type:'sec', title:'Links extras', help:'Botões escuros acima das redes sociais (ex.: Parcerias, WhatsApp, Trabalhe conosco).', fields:[
+      {type:'list', path:'links', label:'Link', titleKey:'title', blank:{icon:'link',title:'',small:'',href:''}, fields:[
+        {type:'row', fields:[{type:'text', key:'title', label:'Título'},{type:'select', key:'icon', label:'Ícone', options:ICON_OPTS}]},
+        {type:'text', key:'small', label:'Linha de apoio'},
+        {type:'url', key:'href', label:'Link'}
+      ]}
+    ]}
+  ]}
+};
+
+/* ---------- renderização dos campos ---------- */
+function el(html){ const t=document.createElement('template'); t.innerHTML=html.trim(); return t.content.firstElementChild; }
+
+function field(f, ctx){
+  // ctx: {get(key), set(key,val)} para itens de lista; senão usa paths globais
+  const g = ctx ? ()=>ctx.get(f.key) : ()=>get(f.path);
+  const s = ctx ? v=>ctx.set(f.key,v) : v=>set(f.path,v);
+  if(f.show && !f.show()) return document.createComment('');
+  switch(f.type){
+    case 'sec': { const w=el(`<div class="sec"><h3>${esc(f.title)}</h3>${f.help?`<p class="help">${esc(f.help)}</p>`:''}</div>`); f.fields.forEach(x=>w.append(field(x,ctx))); return w; }
+    case 'group': { const w=el(`<div class="group"><h4>${esc(f.title)}</h4></div>`); f.fields.forEach(x=>w.append(field(x,ctx))); return w; }
+    case 'row': { const w=el('<div class="row2"></div>'); f.fields.forEach(x=>w.append(field(x,ctx))); return w; }
+    case 'text': case 'url': case 'textarea': case 'datetime': {
+      const tag = f.type==='textarea' ? 'textarea' : 'input';
+      const typ = f.type==='datetime' ? 'datetime-local' : (f.type==='url'?'url':'text');
+      const w=el(`<div class="f"><label>${esc(f.label)}</label>${tag==='textarea'?'<textarea class="inp"></textarea>':`<input class="inp" type="${typ}" ${f.type==='url'?'placeholder="https://"':''}>`}${f.hint?`<span class="hint">${esc(f.hint)}</span>`:''}</div>`);
+      const i=w.querySelector('.inp'); i.value=g()??''; i.addEventListener('input',()=>s(i.value)); return w;
+    }
+    case 'select': {
+      const w=el(`<div class="f"><label>${esc(f.label)}</label><select class="inp">${f.options.map(([v,l])=>`<option value="${esc(v)}">${esc(l)}</option>`).join('')}</select></div>`);
+      const i=w.querySelector('select'); i.value=g()??''; i.addEventListener('change',()=>{ s(i.value); drawForm(); }); return w;
+    }
+    case 'toggle': {
+      const w=el(`<label class="tog"><input type="checkbox"><span>${esc(f.label)}</span></label>`);
+      const i=w.querySelector('input'); i.checked=!!g(); i.addEventListener('change',()=>s(i.checked)); return w;
+    }
+    case 'image': case 'video': return mediaField(f,g,s);
+    case 'list': return listField(f);
+    case 'modes': return modesField();
+    case 'history': return historyField();
+    case 'reset': {
+      const w=el(`<div class="sec"><h3>Voltar ao original</h3><p class="help">Recarrega o conteúdo que estava no ar no Lovable (Novembro Genial). Só vale depois de publicar.</p><button class="b s danger">Restaurar conteúdo original</button></div>`);
+      w.querySelector('button').onclick=()=>{ if(confirm('Substituir tudo pelo conteúdo original? Você ainda precisa clicar em Publicar.')){ state=clone(DEF); changed(); drawForm(); } };
+      return w;
+    }
+  }
+  return document.createComment('');
+}
+
+function mediaField(f,g,s){
+  const isV=f.type==='video';
+  const w=el(`<div class="f"><label>${esc(f.label)}</label><div class="media"><div class="thumb${f.contain?' contain':''}"></div><div class="col"><input class="inp" type="url" placeholder="Link do arquivo ou envie abaixo"><div class="acts"><label class="b s">Enviar ${isV?'vídeo':'imagem'}<input type="file" accept="${isV?'video/mp4,video/webm,video/quicktime':'image/*'}" hidden></label><button class="b s ghost danger" type="button">Remover</button></div></div></div>${f.hint?`<span class="hint">${esc(f.hint)}</span>`:''}</div>`);
+  const th=w.querySelector('.thumb'), inp=w.querySelector('.inp'), file=w.querySelector('input[type=file]');
+  const paint=()=>{ const v=g(); th.innerHTML=''; th.style.backgroundImage='';
+    if(!v){ th.textContent='vazio'; return; }
+    if(isV){ const vd=document.createElement('video'); vd.src=abs(v); vd.muted=true; vd.autoplay=true; vd.loop=true; vd.playsInline=true; th.append(vd); }
+    else th.style.backgroundImage=`url("${abs(v)}")`; };
+  inp.value=g()||''; paint();
+  inp.addEventListener('input',()=>{ s(inp.value.trim()); paint(); });
+  w.querySelector('.danger').onclick=()=>{ s(''); inp.value=''; paint(); };
+  file.addEventListener('change', async ()=>{
+    const fl=file.files[0]; if(!fl) return;
+    if(fl.size>50*1024*1024){ toast('Arquivo acima de 50 MB.', true); return; }
+    w.classList.add('spin'); toast('Enviando '+fl.name+'…');
+    try{
+      const ext=(fl.name.split('.').pop()||'bin').toLowerCase().replace(/[^a-z0-9]/g,'');
+      const base=fl.name.replace(/\.[^.]+$/,'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').slice(0,40);
+      const path=`uploads/${Date.now()}-${base}.${ext}`;
+      const { error } = await sb.storage.from(CFG.bucket).upload(path, fl, { cacheControl:'31536000', upsert:false, contentType: fl.type||undefined });
+      if(error) throw error;
+      const { data } = sb.storage.from(CFG.bucket).getPublicUrl(path);
+      s(data.publicUrl); inp.value=data.publicUrl; paint(); toast('Arquivo enviado. Falta publicar.');
+    }catch(e){ console.error(e); toast('Falha no envio: '+(e.message||e), true); }
+    w.classList.remove('spin'); file.value='';
+  });
+  return w;
+}
+
+function listField(f){
+  const w=el('<div></div>');
+  const arr=()=>{ let a=get(f.path); if(!Array.isArray(a)){ a=[]; set(f.path,a); } return a; };
+  arr().forEach((it,i)=>{
+    const box=el(`<div class="item"><div class="item-h"><b>${esc(f.label)} ${i+1}${it[f.titleKey]?' · '+esc(it[f.titleKey]):''}</b>
+      <button class="b s ghost" data-a="up" title="Subir">↑</button><button class="b s ghost" data-a="down" title="Descer">↓</button>
+      <button class="b s ghost" data-a="dup" title="Duplicar">⧉</button><button class="b s ghost danger" data-a="del" title="Excluir">✕</button></div></div>`);
+    const ctx={ get:k=>arr()[i][k], set:(k,v)=>{ arr()[i][k]=v; changed(); } };
+    f.fields.forEach(x=>box.append(field(x,ctx)));
+    box.querySelector('.item-h').addEventListener('click',e=>{
+      const a=e.target.closest('button')?.dataset.a; if(!a) return; const L=arr();
+      if(a==='up'&&i>0) [L[i-1],L[i]]=[L[i],L[i-1]];
+      if(a==='down'&&i<L.length-1) [L[i+1],L[i]]=[L[i],L[i+1]];
+      if(a==='dup') L.splice(i+1,0,clone(L[i]));
+      if(a==='del'){ if(!confirm('Excluir este item?')) return; L.splice(i,1); }
+      changed(); drawForm();
+    });
+    w.append(box);
+  });
+  const add=el(`<button class="b s" type="button">+ Adicionar ${esc(f.label.toLowerCase())}</button>`);
+  add.onclick=()=>{ arr().push(clone(f.blank)); changed(); drawForm(); };
+  w.append(add); return w;
+}
+
+function modesField(){
+  const w=el(`<div class="sec"><h3>O que está no ar</h3><p class="help">Escolha qual versão da bio aparece para quem clica no link.</p><div class="modes">
+    <button class="mode" data-m="campanha"><b>Campanha</b><small>Com cupons, contagem regressiva e chamada da campanha.</small></button>
+    <button class="mode" data-m="normal"><b>Normal</b><small>Sem cupons. Para os períodos entre campanhas.</small></button></div></div>`);
+  w.querySelectorAll('.mode').forEach(b=>{ b.classList.toggle('on', state.mode===b.dataset.m);
+    b.onclick=()=>{ set('mode', b.dataset.m); setPv(b.dataset.m); drawForm(); }; });
+  return w;
+}
+
+function historyField(){
+  const w=el(`<div class="sec"><h3>Versões publicadas</h3><p class="help">As 15 últimas publicações. "Carregar" traz a versão para o editor; depois é só publicar.</p><div class="hl">Carregando…</div></div>`);
+  sb.from('bio_history').select('id,saved_at,saved_by,data').eq('site_id',CFG.siteId).order('saved_at',{ascending:false}).limit(15).then(({data,error})=>{
+    const box=w.querySelector('.hl'); box.innerHTML='';
+    if(error||!data?.length){ box.textContent='Nenhuma publicação ainda.'; return; }
+    data.forEach(h=>{ const r=el(`<div class="hist"><span>${new Date(h.saved_at).toLocaleString('pt-BR')} · ${esc(h.data?.mode==='normal'?'Normal':'Campanha')}</span><button class="b s">Carregar</button></div>`);
+      r.querySelector('button').onclick=()=>{ state=merge(clone(DEF),h.data); changed(); drawForm(); toast('Versão carregada. Publique para colocar no ar.'); }; box.append(r); });
+  });
+  return w;
+}
+
+/* ---------- telas ---------- */
+function drawTabs(){
+  const t=$('#tabs'); t.innerHTML='';
+  Object.entries(TABS).forEach(([k,v])=>{ const b=el(`<button class="tab${k===tab?' on':''}">${esc(v.label)}</button>`); b.onclick=()=>{ tab=k; $('#form').scrollTop=0; drawTabs(); drawForm(); if(k==='campanha'||k==='normal') setPv(k); }; t.append(b); });
+}
+function drawForm(){
+  const f=$('#form'), y=f.scrollTop; f.innerHTML='';
+  TABS[tab].render().forEach(x=>f.append(field(x)));
+  f.scrollTop=y; drawStatus();
+}
+function drawStatus(){
+  const live=JSON.parse(saved||'null');
+  const m=live?.mode==='normal'?'Normal':'Campanha';
+  let extra='';
+  if(live?.mode==='campanha' && live.autoNormalAfterEnd && live.campanha?.end){
+    const end=new Date(live.campanha.end.length===16?live.campanha.end+':00-03:00':live.campanha.end);
+    extra = new Date()>=end ? ' (campanha já terminou: o site mostra o modo Normal)' : ` · vira Normal em ${end.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}`;
+  }
+  $('#status').innerHTML=`<span class="dot"></span><span>No ar agora: <b>${m}</b>${esc(extra)}</span>`;
+}
+
+let pvT=null;
+function changed(){
+  const dirty = JSON.stringify(state)!==saved;
+  $('#save').disabled=!dirty; $('#discard').hidden=!dirty;
+  const msg=$('#msg'); msg.textContent=dirty?'Alterações ainda não publicadas.':'Tudo salvo.'; msg.classList.toggle('dirty',dirty);
+  clearTimeout(pvT); pvT=setTimeout(pushPreview,250);
+}
+function pushPreview(){ const fr=$('#frame'); try{ fr.contentWindow.postMessage({type:'bio-preview', data:clone(state)}, location.origin); }catch(e){} }
+function setPv(m){ if(pvMode===m && $('#frame').src) return; pvMode=m; $('#pvMode').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.v===m)); $('#frame').src='../?preview=1&modo='+m; }
+window.addEventListener('message',e=>{ if(e.origin===location.origin && e.data?.type==='bio-preview-ready') pushPreview(); });
+$('#pvMode').addEventListener('click',e=>{ const v=e.target.dataset.v; if(v){ pvMode=''; setPv(v); } });
+$('#pvDev').addEventListener('click',e=>{ const v=e.target.dataset.v; if(!v) return; $('#pvDev').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b===e.target)); $('#frame').className='frame '+v; });
+
+$('#save').onclick=async()=>{
+  const btn=$('#save'); btn.disabled=true; btn.textContent='Publicando…';
+  const data=clone(state);
+  const { error } = await sb.from('bio_site').upsert({ id:CFG.siteId, data, updated_at:new Date().toISOString(), updated_by:user?.email });
+  if(error){ toast('Não publicou: '+error.message, true); btn.disabled=false; btn.textContent='Publicar alterações'; return; }
+  await sb.from('bio_history').insert({ site_id:CFG.siteId, data, saved_by:user?.email });
+  saved=JSON.stringify(state); btn.textContent='Publicar alterações'; changed(); drawStatus();
+  toast('Publicado! Já está no ar.');
+};
+$('#discard').onclick=()=>{ if(!confirm('Descartar o que não foi publicado?')) return; state=JSON.parse(saved); changed(); drawForm(); };
+window.addEventListener('beforeunload',e=>{ if(state && JSON.stringify(state)!==saved){ e.preventDefault(); e.returnValue=''; } });
+
+/* ---------- login ---------- */
+async function enter(session){
+  user=session.user;
+  const { data:ok } = await sb.rpc('is_bio_admin');
+  if(!ok){ await sb.auth.signOut(); $('#loginErr').textContent='Este e-mail não tem acesso ao painel da bio.'; return; }
+  const { data, error } = await sb.from('bio_site').select('data').eq('id',CFG.siteId).maybeSingle();
+  if(error){ $('#loginErr').textContent='Erro ao carregar: '+error.message; return; }
+  state = merge(clone(DEF), data?.data || {});
+  saved = data ? JSON.stringify(state) : '';
+  $('#login').hidden=true; $('#app').hidden=false;
+  drawTabs(); drawForm(); setPv(state.mode==='normal'?'normal':'campanha'); changed();
+  if(!data) $('#msg').textContent='Primeira vez: confira e clique em Publicar para ativar o painel.';
+}
+$('#loginForm').onsubmit=async e=>{
+  e.preventDefault(); $('#loginErr').textContent='';
+  const { data, error } = await sb.auth.signInWithPassword({ email:$('#email').value.trim(), password:$('#pass').value });
+  if(error){ $('#loginErr').textContent = error.message==='Invalid login credentials'?'E-mail ou senha incorretos.':error.message; return; }
+  enter(data.session);
+};
+$('#forgot').onclick=async()=>{
+  const email=$('#email').value.trim(); if(!email){ $('#loginErr').textContent='Digite seu e-mail acima primeiro.'; return; }
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin+location.pathname });
+  $('#loginErr').innerHTML = error ? esc(error.message) : '<span class="ok">Se o e-mail tiver acesso, chega um link para criar nova senha.</span>';
+};
+$('#newpassForm').onsubmit=async e=>{
+  e.preventDefault();
+  const { error } = await sb.auth.updateUser({ password:$('#np1').value });
+  if(error){ $('#npErr').textContent=error.message; return; }
+  $('#newpass').hidden=true; const { data } = await sb.auth.getSession(); if(data.session) enter(data.session);
+};
+$('#logout').onclick=async()=>{ await sb.auth.signOut(); location.reload(); };
+
+sb.auth.onAuthStateChange((ev)=>{ if(ev==='PASSWORD_RECOVERY'){ $('#login').hidden=true; $('#newpass').hidden=false; } });
+const { data:{ session } } = await sb.auth.getSession();
+if(session && !location.hash.includes('type=recovery')) enter(session);
+</script>
+</body>
+</html>
