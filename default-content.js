@@ -80,7 +80,6 @@ window.BIO_DEFAULT = {
     destaquesTitle: 'Comece por aqui',
     destaquesHint: 'Toque para ver no site.',
     destaques: [
-      { categoria: 'Mesas', descricao: 'Com regulagem de altura.', href: 'https://geniodesk.com.br/collections/mesa-com-regulagem-de-altura?utm_source=instagram&utm_medium=bio&utm_campaign=bio_destaque_mesas' },
       { categoria: 'Cadeiras', descricao: 'Ergonômicas.', href: 'https://geniodesk.com.br/collections/cadeiras-ergonomicas?utm_source=instagram&utm_medium=bio&utm_campaign=bio_destaque_cadeiras' },
       { categoria: 'M-Stand', descricao: 'O essencial em forma elevada.', href: 'https://geniodesk.com.br/collections/m-stand?utm_source=instagram&utm_medium=bio&utm_campaign=bio_destaque_mstand' },
       { categoria: 'Acessórios', descricao: 'Para completar o setup.', href: 'https://geniodesk.com.br/collections/acessorios?utm_source=instagram&utm_medium=bio&utm_campaign=bio_destaque_acessorios' }

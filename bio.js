@@ -128,7 +128,7 @@
     if(mode==='campanha'){
       var list=(m.cupons||[]).filter(function(c){return c&&(c.codigo||c.categoria)});
       if(!list.length) return '';
-      h+='<div class="cups" id="cupons" aria-label="'+esc(m.cuponsTitle||'Cupons')+'">';
+      h+='<div class="cups" id="cupons" style="--n:'+Math.min(list.length,4)+'" aria-label="'+esc(m.cuponsTitle||'Cupons')+'">';
       h+='<div class="cups-h"><h3>'+esc(m.cuponsTitle)+'</h3><span>'+esc(m.cuponsHint)+'</span></div>';
       list.forEach(function(c){
         h+='<button class="cup" type="button" data-code="'+esc(c.codigo)+'" data-href="'+url(c.href)+'">';
@@ -141,7 +141,7 @@
     }
     var ds=(m.destaques||[]).filter(function(c){return c&&c.categoria});
     if(!ds.length) return '';
-    h+='<div class="cups" id="cupons" aria-label="'+esc(m.destaquesTitle||'Destaques')+'">';
+    h+='<div class="cups" id="cupons" style="--n:'+Math.min(ds.length,4)+'" aria-label="'+esc(m.destaquesTitle||'Destaques')+'">';
     h+='<div class="cups-h"><h3>'+esc(m.destaquesTitle)+'</h3><span>'+esc(m.destaquesHint)+'</span></div>';
     ds.forEach(function(c){
       h+='<a class="cup alt" href="'+url(c.href)+'"'+tgt(c.href)+'><span class="ctx"><span class="ey">'+esc(c.categoria)+'</span>';
