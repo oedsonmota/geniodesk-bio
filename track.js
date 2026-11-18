@@ -50,14 +50,18 @@
     if(!ref&&document.referrer){try{var h=new URL(document.referrer).hostname.replace(/^www\.|^l\.|^m\./,'');if(h&&h!==location.hostname)ref=h}catch(e){}}
     return ref.slice(0,200);
   }
-  function post(table,obj){try{fetch(CFG.supabaseUrl+'/rest/v1/'+table,{method:'POST',keepalive:true,headers:hdr(),body:JSON.stringify(obj)}).catch(function(){})}catch(e){}}
+  /* só conta gente de verdade: a visita entra depois do primeiro toque, rolagem ou movimento de mouse */
+  var human=false, humanWait=[];
+  function onHuman(fn){if(human)fn();else humanWait.push(fn)}
+  ['touchstart','pointerdown','keydown','wheel','scroll','mousemove'].forEach(function(ev){addEventListener(ev,function(){if(human)return;human=true;humanWait.splice(0).forEach(function(f){f()})},{passive:true,capture:true})});
+  function post(table,obj){if(GEO&&GEO.dc)return;try{fetch(CFG.supabaseUrl+'/rest/v1/'+table,{method:'POST',keepalive:true,headers:hdr(),body:JSON.stringify(obj)}).catch(function(){})}catch(e){}}
 
   /* região aproximada (estado e cidade) a partir da conexão; o IP não é guardado */
   var GEO=null; try{GEO=JSON.parse(sessionStorage.getItem('gd-bio-geo')||'null')}catch(e){}
   var geoReady=GEO?Promise.resolve(GEO):new Promise(function(res){
     var done=false; setTimeout(function(){if(!done){done=true;res(null)}},2500);
     fetch('https://get.geojs.io/v1/ip/geo.json').then(function(r){return r.json()}).then(function(g){
-      GEO={country:(g.country||'').slice(0,60)||null,region:(g.region||'').slice(0,80)||null,city:(g.city||'').slice(0,80)||null};
+      GEO={country:(g.country||'').slice(0,60)||null,region:(g.region||'').slice(0,80)||null,city:(g.city||'').slice(0,80)||null,dc:/amazon|google llc|microsoft|digitalocean|ovh|hetzner|linode|oracle|alibaba|tencent|facebook|meta platforms|vultr|choopa|scaleway|leaseweb|contabo|m247|datacamp|cdn77|hostinger|godaddy|ionos|hostgator|locaweb|equinix|zenlayer|tor exit/i.test(g.organization_name||g.organization||'')};
       try{sessionStorage.setItem('gd-bio-geo',JSON.stringify(GEO))}catch(e){}
       if(!done){done=true;res(GEO)}
     }).catch(function(){if(!done){done=true;res(null)}});
@@ -66,7 +70,7 @@
 
   /* visita: uma por sessão do navegador */
   var rendered=new Promise(function(res){var n=0;(function w(){if(mode()||n++>40)res();else setTimeout(w,100)})()});
-  function sendView(){Promise.all([geoReady,rendered]).then(function(){post('bio_events',base({type:'view'}))})}
+  function sendView(){Promise.all([geoReady,rendered]).then(function(){onHuman(function(){post('bio_events',base({type:'view'}))})})}
   try{if(!sessionStorage.getItem('gd-bio-v')){sessionStorage.setItem('gd-bio-v','1');sendView()}}catch(e){sendView()}
 
   /* cliques em links, cupons, produtos e redes */
@@ -110,6 +114,7 @@
   },true);
   function flush(){
     tick();
+    if(!human)return;
     if(B.ms<400&&!B.clicks.length)return;
     var o=base({id:vid,part:part,vw:innerWidth,dur_ms:Math.min(B.ms,3600000),max_pct:B.max,seen:Object.keys(B.seen).slice(0,80),dwell:B.dwell,clicks:B.clicks});
     part++; B=nb(); if(part>50)return;
