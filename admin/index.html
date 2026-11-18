@@ -100,6 +100,33 @@ textarea.inp{min-height:70px;resize:vertical}
 .toast.bad{background:var(--red);color:#fff}
 .spin{opacity:.6;pointer-events:none}
 
+.periods{display:inline-flex;padding:3px;border-radius:999px;background:#1d1d1d;border:1px solid var(--line);margin-bottom:14px}
+.periods button{border:0;background:transparent;padding:6px 13px;border-radius:999px;cursor:pointer;color:var(--muted);font-weight:600;font-size:12.5px}
+.periods button.on{background:var(--y);color:var(--ink)}
+.hmctl{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}.hmctl .periods{margin:0}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}.kpis.k4{grid-template-columns:repeat(2,1fr)}
+.kpi{padding:14px;border-radius:14px;background:var(--card);border:1px solid var(--line)}
+.kpi small{display:block;font-size:12px;color:var(--muted);font-weight:600}
+.kpi b{display:block;font-size:28px;letter-spacing:-.03em;font-variant-numeric:tabular-nums;margin-top:2px}
+.kpi em{display:block;font-style:normal;font-size:11.5px;color:var(--dim);margin-top:2px}
+.chart{height:150px;display:flex;align-items:flex-end;gap:2px;padding-top:8px;border-bottom:1px solid var(--line2)}
+.chart .bar{flex:1;height:100%;display:flex;align-items:flex-end}
+.chart .bar i{display:block;width:100%;background:var(--y);border-radius:4px 4px 0 0}
+.chart .bar:hover i{background:#fff}
+.axis{display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin-top:6px}
+.tip{position:fixed;pointer-events:none;background:#fff;color:#111;font-size:12px;padding:7px 10px;border-radius:8px;white-space:nowrap;z-index:20;transform:translate(-50%,calc(-100% - 10px))}
+.tip b{display:block;font-size:11px;color:#666;font-weight:500}
+.lrow{display:grid;grid-template-columns:minmax(0,1fr) 110px 48px;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
+.lrow:last-child{border-bottom:0}
+.lrow .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lrow .nm small{display:block;color:var(--dim);font-size:11.5px}
+.track{height:8px;border-radius:4px;background:#2a2a2a;overflow:hidden}.track i{display:block;height:100%;background:var(--y);border-radius:4px}
+.lrow .n{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+.empty{color:var(--muted);font-size:13px;padding:6px 0}
+.legend{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--muted);margin:2px 0 14px}
+.legend i{flex:none;width:120px;height:8px;border-radius:4px;background:linear-gradient(90deg,#3b528b,#21918c,#5ec962,#fde725)}
+.hmnote{font-size:12px;color:var(--dim);margin:0 0 12px}
+.hmlbl{font-size:12px;color:var(--y);font-weight:700}
 @media (max-width:980px){
   .app{grid-template-columns:1fr;height:auto}
   .left{height:auto;border-right:0}
@@ -153,7 +180,7 @@ textarea.inp{min-height:70px;resize:vertical}
   </div>
   <div class="right">
     <div class="ptop">
-      <b style="font-size:13px">Pré-visualização</b>
+      <b style="font-size:13px" id="pvTitle">Pré-visualização</b> <span class="hmlbl" id="hmLbl" hidden></span>
       <div class="seg2" id="pvMode"><button data-v="campanha">Campanha</button><button data-v="normal">Normal</button></div>
       <div class="sp"></div>
       <div class="seg2" id="pvDev"><button data-v="m" class="on">Celular</button><button data-v="d">Desktop</button></div>
@@ -162,6 +189,7 @@ textarea.inp{min-height:70px;resize:vertical}
   </div>
 </div>
 <div class="toast" id="toast"></div>
+<div class="tip" id="tip" hidden></div>
 
 <script src="../config.js"></script>
 <script src="../default-content.js"></script>
@@ -172,7 +200,7 @@ const sb = createClient(CFG.supabaseUrl, CFG.supabaseKey);
 const $ = s => document.querySelector(s);
 const clone = o => JSON.parse(JSON.stringify(o));
 
-let state = null, saved = '', user = null, tab = 'geral', pvMode = 'campanha';
+let state = null, saved = '', user = null, tab = 'geral', pvMode = 'campanha', period = 30;
 
 /* ---------- utilidades ---------- */
 function merge(base, over){
@@ -318,6 +346,8 @@ const TABS = {
       ]}
     ]}
   ]},
+  cliques: {label:'Cliques', render:()=>[{type:'custom', draw:drawStats}]},
+  calor: {label:'Mapa de calor', render:()=>[{type:'custom', draw:drawHeat}]},
   links: {label:'Links', render:()=>[
     {type:'sec', title:'Links extras', help:'Botões escuros acima das redes sociais (ex.: Parcerias, WhatsApp, Trabalhe conosco).', fields:[
       {type:'list', path:'links', label:'Link', titleKey:'title', blank:{icon:'link',title:'',small:'',href:''}, fields:[
@@ -359,6 +389,7 @@ function field(f, ctx){
     case 'list': return listField(f);
     case 'modes': return modesField();
     case 'history': return historyField();
+    case 'custom': { const w=el('<div></div>'); f.draw(w); return w; }
     case 'reset': {
       const w=el(`<div class="sec"><h3>Voltar ao original</h3><p class="help">Recarrega o conteúdo que estava no ar no Lovable (Novembro Genial). Só vale depois de publicar.</p><button class="b s danger">Restaurar conteúdo original</button></div>`);
       w.querySelector('button').onclick=()=>{ if(confirm('Substituir tudo pelo conteúdo original? Você ainda precisa clicar em Publicar.')){ state=clone(DEF); changed(); drawForm(); } };
@@ -441,10 +472,154 @@ function historyField(){
   return w;
 }
 
+/* ---------- cliques ---------- */
+let statsCache={};
+const esc2=esc;
+function keyName(k,label){
+  if(!k) return label||'—';
+  if(label) return label;
+  if(k==='topo') return 'Topo (vídeo e chamada)'; if(k==='rodape') return 'Rodapé'; if(k==='pagina') return 'Fora dos blocos';
+  if(k==='garantia') return 'Card de garantia'; if(k==='card-escuro') return 'Card escuro';
+  const [a,b]=k.split(':'); return ({cupom:'Cupom ',atalho:'Atalho ',produto:'Produto ',link:'',social:'',topo:'Topo · '}[a]||'')+(b||'').replace(/-/g,' ').toUpperCase();
+}
+async function loadStats(days){
+  if(statsCache[days]) return statsCache[days];
+  const { data, error } = await sb.rpc('bio_stats',{ p_site:CFG.siteId, p_days:days, p_mode:null });
+  if(error) throw error; statsCache[days]=data; return data;
+}
+function drawStats(w){
+  const s=el(`<div class="sec"><h3>Cliques e visitas</h3><p class="help">Dados reais de quem abre a bio. Visitas contam uma vez por pessoa a cada vez que ela abre a página. Seus acessos pelo navegador do painel não entram.</p>
+    <div class="periods">${[[7,'7 dias'],[30,'30 dias'],[90,'90 dias']].map(([v,l])=>`<button data-p="${v}" class="${v===period?'on':''}">${l}</button>`).join('')}</div>
+    <div class="out"><p class="empty">Carregando…</p></div></div>`);
+  s.querySelector('.periods').onclick=e=>{ const p=Number(e.target.dataset.p); if(p){ period=p; drawForm(); } };
+  w.append(s);
+  loadStats(period).then(d=>{
+    const out=s.querySelector('.out'); out.innerHTML='';
+    const rate=d.views?Math.round(d.clicks/d.views*100):0;
+    out.append(el(`<div class="kpis"><div class="kpi"><small>Visitas</small><b>${d.views.toLocaleString('pt-BR')}</b></div><div class="kpi"><small>Cliques</small><b>${d.clicks.toLocaleString('pt-BR')}</b></div><div class="kpi"><small>Cliques por visita</small><b>${d.views?rate+'%':'—'}</b></div></div>`));
+    const map={}; d.days.forEach(x=>map[x.d]=x); const days=[]; const since=new Date(d.since);
+    for(let i=0;i<period;i++){ const dt=new Date(since.getTime()+i*864e5+3*36e5); const k=dt.toISOString().slice(0,10); days.push({dt,c:map[k]?.c||0,v:map[k]?.v||0}); }
+    const max=Math.max(1,...days.map(x=>x.c)), tip=$('#tip');
+    const g=el(`<div class="group"><h4>Cliques por dia</h4><div class="chart"></div><div class="axis"><span>${days[0].dt.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}</span><span>hoje</span></div></div>`);
+    days.forEach(x=>{ const b=el(`<div class="bar"><i style="height:${x.c/max*100}%"></i></div>`);
+      b.onmouseenter=()=>{ tip.hidden=false; tip.innerHTML=`<b>${x.dt.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'})}</b>${x.c} cliques · ${x.v} visitas`; const r=b.getBoundingClientRect(); tip.style.left=(r.left+r.width/2)+'px'; tip.style.top=(r.bottom-b.firstChild.offsetHeight)+'px'; };
+      b.onmouseleave=()=>tip.hidden=true; g.querySelector('.chart').append(b); });
+    out.append(g);
+    const devs=d.devices||[], dv=Math.max(1,devs.reduce((a,x)=>a+x.v,0));
+    if(devs.length){ const DN={mobile:'Celular',desktop:'Computador','?':'Sem informação'}; const dg=el(`<div class="group"><h4>Celular ou computador</h4></div>`);
+      devs.forEach(x=>dg.append(el(`<div class="lrow"><span class="nm">${esc(DN[x.dev]||x.dev)}<small>${x.v} visitas · ${x.c} cliques${x.v?' · '+Math.round(x.c/x.v*100)+'% cliques por visita':''}</small></span><span class="track"><i style="width:${x.v/dv*100}%"></i></span><span class="n">${Math.round(x.v/dv*100)}%</span></div>`))); out.append(dg); }
+    if((d.regions||[]).length){ const tot=Math.max(1,d.geo_known||0), rmx=Math.max(1,...d.regions.map(x=>x.v)); const rg=el(`<div class="group"><h4>Estados e regiões</h4></div>`);
+      d.regions.forEach(x=>rg.append(el(`<div class="lrow"><span class="nm">${esc(x.region)}<small>${esc(x.country||'')} · ${Math.round(x.v/tot*100)}% das visitas</small></span><span class="track"><i style="width:${x.v/rmx*100}%"></i></span><span class="n">${x.v}</span></div>`))); out.append(rg);
+      const cmx=Math.max(1,...(d.cities||[]).map(x=>x.v)); const cg=el(`<div class="group"><h4>Cidades</h4><p class="help" style="margin:-6px 0 8px;color:var(--dim);font-size:12px">A cidade vem da conexão de internet. No celular, às vezes aparece a cidade da operadora.</p></div>`);
+      (d.cities||[]).forEach(x=>cg.append(el(`<div class="lrow"><span class="nm">${esc(x.city)}<small>${esc(x.region||'')}</small></span><span class="track"><i style="width:${x.v/cmx*100}%"></i></span><span class="n">${x.v}</span></div>`))); out.append(cg); }
+    const lg=el(`<div class="group"><h4>O que mais clicam</h4></div>`); const lmax=Math.max(1,...d.links.map(x=>x.c));
+    if(!d.links.length) lg.append(el('<p class="empty">Nenhum clique nesse período ainda.</p>'));
+    d.links.forEach(x=>lg.append(el(`<div class="lrow"><span class="nm">${esc(keyName(x.id,x.label))}<small>último ${new Date(x.last).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}${d.clicks?' · '+Math.round(x.c/d.clicks*100)+'% dos cliques':''}</small></span><span class="track"><i style="width:${x.c/lmax*100}%"></i></span><span class="n">${x.c}</span></div>`)));
+    out.append(lg);
+    if(d.refs.length){ const rmax=Math.max(1,...d.refs.map(x=>x.v)); const rg=el(`<div class="group"><h4>De onde vieram</h4><p class="help" style="margin:-6px 0 8px;color:var(--dim);font-size:12px">Para separar origens, use links como geniodesk-bio.vercel.app/?ref=stories</p></div>`);
+      d.refs.forEach(x=>rg.append(el(`<div class="lrow"><span class="nm">${esc(x.ref==='instagram.com'?'Instagram':x.ref)}</span><span class="track"><i style="width:${x.v/rmax*100}%"></i></span><span class="n">${x.v}</span></div>`))); out.append(rg); }
+  }).catch(e=>{ s.querySelector('.out').innerHTML=`<p class="empty">Não consegui carregar: ${esc(e.message||e)}</p>`; });
+}
+
+/* ---------- mapa de calor ---------- */
+let hmDev='mobile', hmMode='cliques', hmData=null, hmKey='';
+const VIR=[[59,82,139],[33,145,140],[94,201,98],[253,231,37]];
+function vir(t){ t=Math.max(0,Math.min(1,t)); const n=VIR.length-1, i=Math.min(n-1,Math.floor(t*n)), f=t*n-i; return VIR[i].map((c,j)=>Math.round(c+(VIR[i+1][j]-c)*f)); }
+const secs = ms => (ms/1000).toLocaleString('pt-BR',{maximumFractionDigits:1})+' s';
+const dur = ms => { const s=Math.round(ms/1000); return s<60? s+' s' : Math.floor(s/60)+' min '+String(s%60).padStart(2,'0')+' s'; };
+function blockName(k){
+  try{ const n=$('#frame').contentDocument.querySelector(`[data-hm="${CSS.escape(k)}"]`); if(n&&n.getAttribute('data-label')) return n.getAttribute('data-label'); }catch(e){}
+  return keyName(k);
+}
+async function loadHeat(){
+  const key=period+'|'+hmDev+'|'+pvMode; if(hmData && hmKey===key) return hmData;
+  const { data, error } = await sb.rpc('bio_heatmap',{ p_site:CFG.siteId, p_days:period, p_device:hmDev, p_mode:pvMode });
+  if(error) throw error; hmData=data; hmKey=key; return data;
+}
+function enterHeat(){
+  [900,1800,3200].forEach(t=>setTimeout(paintHeat,t));
+  const fr=$('#frame'), want='frame '+(hmDev==='mobile'?'m':'d');
+  $('#pvDev').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.v===(hmDev==='mobile'?'m':'d')));
+  if(fr.className!==want) fr.className=want;
+  if(!fr.src.includes('hm=1')) fr.src='../?preview=1&hm=1&modo='+pvMode; else setTimeout(paintHeat,450);
+  $('#pvTitle').textContent='Mapa de calor'; $('#hmLbl').hidden=false;
+  $('#hmLbl').textContent={cliques:'· onde clicam',atencao:'· onde ficam mais tempo',rolagem:'· até onde rolam'}[hmMode];
+}
+function leaveHeat(){ $('#frame').src='../?preview=1&modo='+pvMode; $('#pvTitle').textContent='Pré-visualização'; $('#hmLbl').hidden=true; }
+function drawHeat(w){
+  const s=el(`<div class="sec"><h3>Mapa de calor</h3><p class="help">Comportamento real de quem visitou o modo <b>${pvMode==='normal'?'Normal':'Campanha'}</b> (troque no topo da pré-visualização). O desenho aparece por cima da página, à direita.</p>
+    <div class="hmctl">
+      <div class="periods" data-g="p">${[[7,'7 dias'],[30,'30 dias'],[90,'90 dias']].map(([v,l])=>`<button data-v="${v}" class="${v===period?'on':''}">${l}</button>`).join('')}</div>
+      <div class="periods" data-g="d">${[['mobile','Celular'],['desktop','Computador']].map(([v,l])=>`<button data-v="${v}" class="${v===hmDev?'on':''}">${l}</button>`).join('')}</div>
+    </div>
+    <div class="periods" data-g="m" style="margin-bottom:10px">${[['cliques','Cliques'],['atencao','Atenção'],['rolagem','Rolagem']].map(([v,l])=>`<button data-v="${v}" class="${v===hmMode?'on':''}">${l}</button>`).join('')}</div>
+    <div class="legend"><span>menos</span><i></i><span>mais</span></div>
+    <div class="out"><p class="empty">Carregando…</p></div></div>`);
+  s.querySelectorAll('.periods').forEach(g=>g.onclick=e=>{ const v=e.target.dataset.v; if(!v) return;
+    if(g.dataset.g==='p') period=Number(v); if(g.dataset.g==='d') hmDev=v; if(g.dataset.g==='m') hmMode=v; drawForm(); });
+  w.append(s); enterHeat();
+  loadHeat().then(d=>{
+    const out=s.querySelector('.out'); out.innerHTML='';
+    const cl=d.clicks||[], dead=cl.filter(c=>c.d).length, rage=cl.filter(c=>c.r).length;
+    out.append(el(`<div class="kpis k4">
+      <div class="kpi"><small>Visitas analisadas</small><b>${d.visits.toLocaleString('pt-BR')}</b><em>${hmDev==='mobile'?'no celular':'no computador'}</em></div>
+      <div class="kpi"><small>Tempo na página</small><b>${d.visits?dur(d.median_ms):'—'}</b><em>metade fica mais que isso · média ${d.visits?dur(d.avg_ms):'—'}</em></div>
+      <div class="kpi"><small>Rolaram até o fim</small><b>${d.visits?d.end_pct+'%':'—'}</b><em>chegaram no rodapé</em></div>
+      <div class="kpi"><small>Cliques sem efeito</small><b>${dead}</b><em>em lugar que não é link${rage?` · ${rage} repetidos com pressa`:''}</em></div></div>`));
+    if(!d.visits){ out.append(el(`<p class="empty">Ainda não há visitas registradas ${hmDev==='mobile'?'no celular':'no computador'} nesse modo e período. O registro começou agora: os dados aparecem conforme as pessoas abrem a bio.</p>`)); paintHeat(); return; }
+    const keys=[...new Set([...Object.keys(d.dwell||{}),...Object.keys(d.reached||{})])];
+    const rows=keys.map(k=>({k,ms:(d.dwell[k]||0)/d.visits,reach:Math.round(100*(d.reached[k]||0)/d.visits),c:cl.filter(c=>c.k===k&&!c.d).length}));
+    const g=el(`<div class="group"><h4>${hmMode==='rolagem'?'Quantos chegaram em cada bloco':'Onde as pessoas ficam mais tempo'}</h4></div>`);
+    const sorted = hmMode==='rolagem' ? rows.sort((a,b)=>b.reach-a.reach) : rows.sort((a,b)=>b.ms-a.ms);
+    const mx=Math.max(1,...sorted.map(r=>hmMode==='rolagem'?r.reach:r.ms));
+    sorted.slice(0,14).forEach(r=>{ const v=hmMode==='rolagem'?r.reach:r.ms;
+      g.append(el(`<div class="lrow"><span class="nm">${esc(blockName(r.k))}<small>${r.reach}% chegaram · ${secs(r.ms)} em média${r.c?` · ${r.c} cliques`:''}</small></span><span class="track"><i style="width:${v/mx*100}%"></i></span><span class="n">${hmMode==='rolagem'?r.reach+'%':secs(r.ms)}</span></div>`)); });
+    out.append(g);
+    out.append(el(`<p class="hmnote">Um bloco conta como "visto" quando metade dele aparece na tela.</p>`));
+    paintHeat();
+  }).catch(e=>{ s.querySelector('.out').innerHTML=`<p class="empty">Não consegui carregar: ${esc(e.message||e)}</p>`; });
+}
+function paintHeat(){
+  const fr=$('#frame'); let doc; try{ doc=fr.contentDocument; }catch(e){ return; }
+  if(!doc||!doc.body||tab!=='calor') return;
+  doc.getElementById('hm-layer')?.remove();
+  const d=hmData, W=doc.documentElement.scrollWidth, H=doc.documentElement.scrollHeight;
+  const cv=doc.createElement('canvas'); cv.id='hm-layer';
+  const dpr=Math.min(2,fr.contentWindow.devicePixelRatio||1);
+  cv.width=W*dpr; cv.height=H*dpr;
+  cv.style.cssText=`position:absolute;left:0;top:0;width:${W}px;height:${H}px;pointer-events:none;z-index:9999`;
+  doc.body.style.position='relative'; doc.body.append(cv);
+  const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr);
+  ctx.fillStyle='rgba(0,0,0,.45)'; ctx.fillRect(0,0,W,H);
+  if(!d||!d.visits) return;
+  const sx=fr.contentWindow.scrollX, sy=fr.contentWindow.scrollY;
+  const box=k=>{ const n=k==='pagina'?doc.getElementById('app'):doc.querySelector(`[data-hm="${CSS.escape(k)}"]`); if(!n) return null; const r=n.getBoundingClientRect(); if(!r.width) return null; return {x:r.left+sx,y:r.top+sy,w:r.width,h:r.height}; };
+  const label=(b,txt)=>{ ctx.font='700 12px "DM Sans",system-ui,sans-serif'; const tw=ctx.measureText(txt).width+14; const x=b.x+b.w-tw-6, y=b.y+6;
+    ctx.fillStyle='rgba(0,0,0,.85)'; ctx.beginPath(); ctx.roundRect(x,y,tw,22,11); ctx.fill(); ctx.fillStyle='#fff'; ctx.fillText(txt,x+7,y+15); };
+  if(hmMode==='cliques'){
+    const pts=(d.clicks||[]).map(c=>{ const b=box(c.k); return b?{x:b.x+c.x*b.w,y:b.y+c.y*b.h}:null; }).filter(Boolean);
+    const a=doc.createElement('canvas'); a.width=W; a.height=H; const ac=a.getContext('2d');
+    const R=Math.max(18,Math.min(34,W/14)), alpha=Math.min(.6,Math.max(.12,6/Math.sqrt(pts.length+1)));
+    pts.forEach(p=>{ const g=ac.createRadialGradient(p.x,p.y,0,p.x,p.y,R); g.addColorStop(0,`rgba(0,0,0,${alpha})`); g.addColorStop(1,'rgba(0,0,0,0)'); ac.fillStyle=g; ac.fillRect(p.x-R,p.y-R,R*2,R*2); });
+    const img=ac.getImageData(0,0,W,H), px=img.data;
+    for(let i=0;i<px.length;i+=4){ const v=px[i+3]/255; if(v<.02){ px[i+3]=0; continue; } const [r,g,b]=vir(v); px[i]=r;px[i+1]=g;px[i+2]=b;px[i+3]=Math.round(Math.min(1,.35+v*.75)*235); }
+    ac.putImageData(img,0,0); ctx.drawImage(a,0,0,W,H);
+    const per={}; (d.clicks||[]).forEach(c=>{ if(!c.d) per[c.k]=(per[c.k]||0)+1; });
+    Object.entries(per).forEach(([k,n])=>{ const b=box(k); if(b && b.w>60) label(b, n+(n===1?' clique':' cliques')); });
+  } else {
+    const keys=[...doc.querySelectorAll('[data-hm]')].map(n=>n.getAttribute('data-hm')).filter(k=>!k.startsWith('social:'));
+    const val=k=> hmMode==='atencao' ? (d.dwell[k]||0)/d.visits : 100*(d.reached[k]||0)/d.visits;
+    const mx=Math.max(1,...keys.map(val));
+    keys.forEach(k=>{ const b=box(k); if(!b) return; const v=val(k), t=hmMode==='rolagem'? v/100 : v/mx; const [r,g,bb]=vir(t);
+      ctx.fillStyle=`rgba(${r},${g},${bb},${.25+t*.45})`; ctx.beginPath(); ctx.roundRect(b.x,b.y,b.w,b.h,14); ctx.fill();
+      if(b.w>60) label(b, hmMode==='atencao' ? secs(v)+' em média' : Math.round(v)+'% chegaram'); });
+  }
+}
+
 /* ---------- telas ---------- */
 function drawTabs(){
   const t=$('#tabs'); t.innerHTML='';
-  Object.entries(TABS).forEach(([k,v])=>{ const b=el(`<button class="tab${k===tab?' on':''}">${esc(v.label)}</button>`); b.onclick=()=>{ tab=k; $('#form').scrollTop=0; drawTabs(); drawForm(); if(k==='campanha'||k==='normal') setPv(k); }; t.append(b); });
+  Object.entries(TABS).forEach(([k,v])=>{ const b=el(`<button class="tab${k===tab?' on':''}">${esc(v.label)}</button>`); b.onclick=()=>{ if(tab==='calor'&&k!=='calor') leaveHeat(); tab=k; $('#form').scrollTop=0; drawTabs(); drawForm(); if(k==='campanha'||k==='normal') setPv(k); }; t.append(b); });
 }
 function drawForm(){
   const f=$('#form'), y=f.scrollTop; f.innerHTML='';
@@ -470,10 +645,10 @@ function changed(){
   clearTimeout(pvT); pvT=setTimeout(pushPreview,250);
 }
 function pushPreview(){ const fr=$('#frame'); try{ fr.contentWindow.postMessage({type:'bio-preview', data:clone(state)}, location.origin); }catch(e){} }
-function setPv(m){ if(pvMode===m && $('#frame').src) return; pvMode=m; $('#pvMode').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.v===m)); $('#frame').src='../?preview=1&modo='+m; }
-window.addEventListener('message',e=>{ if(e.origin===location.origin && e.data?.type==='bio-preview-ready') pushPreview(); });
+function setPv(m){ if(pvMode===m && $('#frame').src) return; pvMode=m; $('#pvMode').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.v===m)); $('#frame').src='../?preview=1'+(tab==='calor'?'&hm=1':'')+'&modo='+m; if(tab==='calor'){ hmKey=''; drawForm(); } }
+window.addEventListener('message',e=>{ if(e.origin!==location.origin) return; if(e.data?.type==='bio-preview-ready') pushPreview(); if(e.data?.type==='bio-rendered' && tab==='calor') setTimeout(paintHeat,450); });
 $('#pvMode').addEventListener('click',e=>{ const v=e.target.dataset.v; if(v){ pvMode=''; setPv(v); } });
-$('#pvDev').addEventListener('click',e=>{ const v=e.target.dataset.v; if(!v) return; $('#pvDev').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b===e.target)); $('#frame').className='frame '+v; });
+$('#pvDev').addEventListener('click',e=>{ const v=e.target.dataset.v; if(!v) return; $('#pvDev').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b===e.target)); $('#frame').className='frame '+v; if(tab==='calor'){ hmDev=v==='m'?'mobile':'desktop'; drawForm(); } });
 
 $('#save').onclick=async()=>{
   const btn=$('#save'); btn.disabled=true; btn.textContent='Publicando…';
@@ -490,6 +665,7 @@ window.addEventListener('beforeunload',e=>{ if(state && JSON.stringify(state)!==
 /* ---------- login ---------- */
 async function enter(session){
   user=session.user;
+  try{ localStorage.setItem('gd-bio-admin','1'); }catch(e){}
   const { data:ok } = await sb.rpc('is_bio_admin');
   if(!ok){ await sb.auth.signOut(); $('#loginErr').textContent='Este e-mail não tem acesso ao painel da bio.'; return; }
   const { data, error } = await sb.from('bio_site').select('data').eq('id',CFG.siteId).maybeSingle();
